@@ -1,5 +1,11 @@
+
 tasks:
   - init: echo "Replace me with a build script for the project."
     command: set -o vi
 image:
   file: .gitpod.Dockerfile
+
+vscode:
+  extensions:
+    - vscjava.vscode-java-debug
+    - Pivotal.vscode-boot-dev-pack
