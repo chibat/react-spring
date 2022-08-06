@@ -11,5 +11,9 @@ npm start
 ```
 
 ```
+./gradlew openApiGenerate
+```
+
+```
 ./gradlew bootJar
 ```
