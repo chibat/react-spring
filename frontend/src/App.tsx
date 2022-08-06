@@ -1,26 +1,31 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useState } from 'react';
+import { AppControllerApi, Configuration } from './generated';
 
-function App() {
+const api = new AppControllerApi(new Configuration({ basePath: window.location.origin }));
+
+export default function App() {
+
+  const [arg1, setArg1] = useState<string>("");
+  const [arg2, setArg2] = useState<string>("");
+  const [result, setResult] = useState<number>();
+
+  function add() {
+    if (!arg1 || !arg2) {
+      return;
+    }
+    api.add({ arg1: Number(arg1), arg2: Number(arg2) }).then(response => {
+      setResult(response.result);
+    });
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <input type="text" value={arg1} onChange={(e) => setArg1(e.target.value)} autoFocus />
+      +
+      <input type="text" value={arg2} onChange={(e) => setArg2(e.target.value)} />
+      <input type="button" value=" = " onClick={add} />
+      <span>{result}</span>
+    </>
   );
 }
 
-export default App;
