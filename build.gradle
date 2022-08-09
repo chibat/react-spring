@@ -5,11 +5,14 @@ plugins {
 
 	// https://plugins.gradle.org/plugin/org.springdoc.openapi-gradle-plugin
 	// https://github.com/springdoc/springdoc-openapi-gradle-plugin
-	id 'org.springdoc.openapi-gradle-plugin' version '1.3.4' //
+	id 'org.springdoc.openapi-gradle-plugin' version '1.4.0' //
 
 	// https://plugins.gradle.org/plugin/org.openapi.generator
 	// 6.0.1 型エラー発生。次のリリースを待つ
 	id 'org.openapi.generator' version '6.0.0'
+
+	// https://github.com/node-gradle/gradle-node-plugin
+	id "com.github.node-gradle.node" version "3.4.0"
 }
 
 group = 'com.example'
@@ -33,21 +36,62 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
+def OPEN_API_GENERATE_DIR = "${project.rootDir}/frontend/src/generated"
+def OPEN_API_DOCS = "$buildDir/openapi.json"
+
 // ここから追加
 // https://github.com/OpenAPITools/openapi-generator/tree/master/modules/openapi-generator-gradle-plugin#configuration
 openApiGenerate {
 	generatorName = "typescript-fetch"
-	inputSpec = "$buildDir/openapi.json".toString()
-	outputDir = "${project.rootDir}/frontend/src/generated".toString()
+	inputSpec = OPEN_API_DOCS.toString()
+	outputDir = OPEN_API_GENERATE_DIR.toString()
 	configOptions = [
 		// https://github.com/OpenAPITools/openapi-generator/blob/master/docs/generators/typescript-fetch.md
 		useSingleRequestParameter: "false"
 	]
 }
 
-tasks.openApiGenerate.dependsOn('generateOpenApiDocs')
+
+openApi {
+	def OPEN_API_DOCS_PORT = 8081
+	apiDocsUrl.set("http://localhost:${OPEN_API_DOCS_PORT}/v3/api-docs")
+	customBootRun {
+		args = ["--server.port=${OPEN_API_DOCS_PORT}"] 
+	}	
+}
+
+task cleanOpenApiGenerate(type: Delete) {
+	delete fileTree(OPEN_API_GENERATE_DIR).include('**/*')
+}
+
+task cleanGenerateOpenApiDocs(type: Delete) {
+	delete OPEN_API_DOCS
+}
+
 
 // ./gradlew openApiGenerate
 
 // bootRun の依存
 // bootJar の依存
+
+def FRONTEND_DIR = "${project.rootDir}/frontend"
+
+node {
+	download = true
+	version = "16.14.2"
+	nodeProjectDir = file(FRONTEND_DIR)
+}
+
+task compileFrontend(type: NpmTask) {
+	//inputs.files fileTree("${FRONTEND_DIR}/src")
+	inputs.files fileTree("${FRONTEND_DIR}")
+	outputs.dir file("${project.rootDir}/build/resources/main/static")
+	args = ['run', 'build']
+}
+
+//tasks.generateOpenApiDocs.dependsOn(cleanGenerateOpenApiDocs)
+bootRunMainClassName.dependsOn(cleanGenerateOpenApiDocs) // 本当は tasks.generateOpenApiDocs.dependsOn cleanGenerateOpenApiDocs したいけどできない
+tasks.openApiGenerate.dependsOn(['generateOpenApiDocs', cleanOpenApiGenerate])
+compileFrontend.dependsOn([npm_ci, tasks.openApiGenerate])
+bootJar.dependsOn compileFrontend
+bootRun.dependsOn compileFrontend // 通常使わない
