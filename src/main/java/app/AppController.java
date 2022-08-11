@@ -10,7 +10,7 @@ import app.model.Response;
 
 @RestController
 public class AppController {
-  
+
   @PostMapping("/add")
   public ResponseEntity<Response> add(@RequestBody Request request) {
     var result = request.arg1() + request.arg2();

@@ -1,3 +1,4 @@
 package app.model;
 
-public record Response(int result) { }
+public record Response(int result) {
+}
