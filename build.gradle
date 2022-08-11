@@ -3,9 +3,10 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.12.RELEASE'
 	id 'java'
 
-	// https://plugins.gradle.org/plugin/org.springdoc.openapi-gradle-plugin
-	// https://github.com/springdoc/springdoc-openapi-gradle-plugin
-	id 'org.springdoc.openapi-gradle-plugin' version '1.4.0' //
+	//// https://plugins.gradle.org/plugin/org.springdoc.openapi-gradle-plugin
+	//// https://github.com/springdoc/springdoc-openapi-gradle-plugin
+	//id 'org.springdoc.openapi-gradle-plugin' version '1.4.0'
+	// この gradle plugin を使うとポートを listen したり、本番時の jar の依存が増える。
 
 	// https://plugins.gradle.org/plugin/org.openapi.generator
 	// 6.0.1 型エラー発生。次のリリースを待つ
@@ -29,17 +30,17 @@ dependencies {
 
 	// https://springdoc.org/#spring-webmvc-support
 	// https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-webmvc-core
-	implementation 'org.springdoc:springdoc-openapi-webmvc-core:1.6.9'
+	testImplementation 'org.springdoc:springdoc-openapi-webmvc-core:1.6.9'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 }
 
+// ここから追加
 def OPEN_API_GENERATE_DIR = "${project.rootDir}/frontend/src/generated"
 def OPEN_API_DOCS = "$buildDir/openapi.json"
 
-// ここから追加
 // https://github.com/OpenAPITools/openapi-generator/tree/master/modules/openapi-generator-gradle-plugin#configuration
 openApiGenerate {
 	generatorName = "typescript-fetch"
@@ -51,18 +52,26 @@ openApiGenerate {
 	]
 }
 
+//openApi {
+//	def OPEN_API_DOCS_PORT = 8081
+//	apiDocsUrl.set("http://localhost:${OPEN_API_DOCS_PORT}/v3/api-docs")
+//	customBootRun {
+//		args = ["--server.port=${OPEN_API_DOCS_PORT}"] 
+//	}	
+//}
 
-openApi {
-	def OPEN_API_DOCS_PORT = 8081
-	apiDocsUrl.set("http://localhost:${OPEN_API_DOCS_PORT}/v3/api-docs")
-	customBootRun {
-		args = ["--server.port=${OPEN_API_DOCS_PORT}"] 
-	}	
+task generateOpenApiDocs(type: Test, dependsOn: testClasses) {
+    useJUnitPlatform()
+    inputs.files fileTree("${project.rootDir}/src/main/java")
+    outputs.file file(OPEN_API_DOCS)
+    filter {
+        includeTestsMatching "app.OpenApiDocsGenerator"
+    }
 }
 
-task cleanOpenApiGenerate(type: Delete) {
-	delete fileTree(OPEN_API_GENERATE_DIR).include('**/*')
-}
+//task cleanOpenApiGenerate(type: Delete) {
+//	delete fileTree(OPEN_API_GENERATE_DIR).include('**/*')
+//}
 
 task cleanGenerateOpenApiDocs(type: Delete) {
 	delete OPEN_API_DOCS
@@ -70,9 +79,6 @@ task cleanGenerateOpenApiDocs(type: Delete) {
 
 
 // ./gradlew openApiGenerate
-
-// bootRun の依存
-// bootJar の依存
 
 def FRONTEND_DIR = "${project.rootDir}/frontend"
 
@@ -90,8 +96,8 @@ task compileFrontend(type: NpmTask) {
 }
 
 //tasks.generateOpenApiDocs.dependsOn(cleanGenerateOpenApiDocs)
-bootRunMainClassName.dependsOn(cleanGenerateOpenApiDocs) // 本当は tasks.generateOpenApiDocs.dependsOn cleanGenerateOpenApiDocs したいけどできない
-tasks.openApiGenerate.dependsOn(['generateOpenApiDocs', cleanOpenApiGenerate])
+//bootRunMainClassName.dependsOn(cleanGenerateOpenApiDocs) // 本当は tasks.generateOpenApiDocs.dependsOn cleanGenerateOpenApiDocs したいけどできない
+tasks.openApiGenerate.dependsOn([generateOpenApiDocs, cleanOpenApiGenerate])
 compileFrontend.dependsOn([npm_ci, tasks.openApiGenerate])
 bootJar.dependsOn compileFrontend
 bootRun.dependsOn compileFrontend // 通常使わない
