@@ -17,11 +17,10 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "npm run gen && react-scripts start",
+    "start": "cd .. && ./gradlew openApiGenerate && cd - && react-scripts start",
     "build": "BUILD_PATH='../build/resources/main/static' react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "gen": "cd .. && ./gradlew openApiGenerate"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [

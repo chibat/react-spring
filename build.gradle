@@ -1,19 +1,19 @@
 plugins {
-	id 'org.springframework.boot' version '2.7.2'
-	id 'io.spring.dependency-management' version '1.0.12.RELEASE'
-	id 'java'
+  id 'org.springframework.boot' version '2.7.2'
+  id 'io.spring.dependency-management' version '1.0.12.RELEASE'
+  id 'java'
 
-	//// https://plugins.gradle.org/plugin/org.springdoc.openapi-gradle-plugin
-	//// https://github.com/springdoc/springdoc-openapi-gradle-plugin
-	//id 'org.springdoc.openapi-gradle-plugin' version '1.4.0'
-	// この gradle plugin を使うとポートを listen したり、本番時の jar の依存が増える。
+  //// https://plugins.gradle.org/plugin/org.springdoc.openapi-gradle-plugin
+  //// https://github.com/springdoc/springdoc-openapi-gradle-plugin
+  //id 'org.springdoc.openapi-gradle-plugin' version '1.4.0'
+  // この gradle plugin を使うとポートを listen したり、本番時の jar の依存が増える。
 
-	// https://plugins.gradle.org/plugin/org.openapi.generator
-	// 6.0.1 型エラー発生。次のリリースを待つ
-	id 'org.openapi.generator' version '6.0.0'
+  // https://plugins.gradle.org/plugin/org.openapi.generator
+  // 6.0.1 型エラー発生。次のリリースを待つ
+  id 'org.openapi.generator' version '6.0.0'
 
-	// https://github.com/node-gradle/gradle-node-plugin
-	id "com.github.node-gradle.node" version "3.4.0"
+  // https://github.com/node-gradle/gradle-node-plugin
+  id "com.github.node-gradle.node" version "3.4.0"
 }
 
 group = 'com.example'
@@ -21,20 +21,20 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 
 repositories {
-	mavenCentral()
+  mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+  implementation 'org.springframework.boot:spring-boot-starter-web'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-	// https://springdoc.org/#spring-webmvc-support
-	// https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-webmvc-core
-	testImplementation 'org.springdoc:springdoc-openapi-webmvc-core:1.6.9'
+  // https://springdoc.org/#spring-webmvc-support
+  // https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-webmvc-core
+  testImplementation 'org.springdoc:springdoc-openapi-webmvc-core:1.6.9'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+  useJUnitPlatform()
 }
 
 // ここから追加
@@ -43,21 +43,21 @@ def OPEN_API_DOCS = "$buildDir/openapi.json"
 
 // https://github.com/OpenAPITools/openapi-generator/tree/master/modules/openapi-generator-gradle-plugin#configuration
 openApiGenerate {
-	generatorName = "typescript-fetch"
-	inputSpec = OPEN_API_DOCS.toString()
-	outputDir = OPEN_API_GENERATE_DIR.toString()
-	configOptions = [
-		// https://github.com/OpenAPITools/openapi-generator/blob/master/docs/generators/typescript-fetch.md
-		useSingleRequestParameter: "false"
-	]
+  generatorName = "typescript-fetch"
+  inputSpec = OPEN_API_DOCS.toString()
+  outputDir = OPEN_API_GENERATE_DIR.toString()
+  configOptions = [
+    // https://github.com/OpenAPITools/openapi-generator/blob/master/docs/generators/typescript-fetch.md
+    useSingleRequestParameter: "false"
+  ]
 }
 
 //openApi {
-//	def OPEN_API_DOCS_PORT = 8081
-//	apiDocsUrl.set("http://localhost:${OPEN_API_DOCS_PORT}/v3/api-docs")
-//	customBootRun {
-//		args = ["--server.port=${OPEN_API_DOCS_PORT}"] 
-//	}	
+//  def OPEN_API_DOCS_PORT = 8081
+//  apiDocsUrl.set("http://localhost:${OPEN_API_DOCS_PORT}/v3/api-docs")
+//  customBootRun {
+//    args = ["--server.port=${OPEN_API_DOCS_PORT}"]
+//  }
 //}
 
 task generateOpenApiDocs(type: Test, dependsOn: testClasses) {
@@ -70,11 +70,11 @@ task generateOpenApiDocs(type: Test, dependsOn: testClasses) {
 }
 
 //task cleanOpenApiGenerate(type: Delete) {
-//	delete fileTree(OPEN_API_GENERATE_DIR).include('**/*')
+//  delete fileTree(OPEN_API_GENERATE_DIR).include('**/*')
 //}
 
 task cleanGenerateOpenApiDocs(type: Delete) {
-	delete OPEN_API_DOCS
+  delete OPEN_API_DOCS
 }
 
 
@@ -83,21 +83,18 @@ task cleanGenerateOpenApiDocs(type: Delete) {
 def FRONTEND_DIR = "${project.rootDir}/frontend"
 
 node {
-	download = true
-	version = "16.14.2"
-	nodeProjectDir = file(FRONTEND_DIR)
+  download = true
+  version = "16.14.2"
+  nodeProjectDir = file(FRONTEND_DIR)
 }
 
 task compileFrontend(type: NpmTask) {
-	//inputs.files fileTree("${FRONTEND_DIR}/src")
-	inputs.files fileTree("${FRONTEND_DIR}")
-	outputs.dir file("${project.rootDir}/build/resources/main/static")
-	args = ['run', 'build']
+  //inputs.files fileTree("${FRONTEND_DIR}/src")
+  inputs.files fileTree("${FRONTEND_DIR}")
+  outputs.dir file("${project.rootDir}/build/resources/main/static")
+  args = ['run', 'build']
 }
 
-//tasks.generateOpenApiDocs.dependsOn(cleanGenerateOpenApiDocs)
-//bootRunMainClassName.dependsOn(cleanGenerateOpenApiDocs) // 本当は tasks.generateOpenApiDocs.dependsOn cleanGenerateOpenApiDocs したいけどできない
 tasks.openApiGenerate.dependsOn([generateOpenApiDocs, cleanOpenApiGenerate])
 compileFrontend.dependsOn([npm_ci, tasks.openApiGenerate])
 bootJar.dependsOn compileFrontend
-bootRun.dependsOn compileFrontend // 通常使わない
