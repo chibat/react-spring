@@ -40,6 +40,7 @@ tasks.named('test') {
 // ここから追加
 def OPEN_API_GENERATE_DIR = "${project.rootDir}/frontend/src/generated"
 def OPEN_API_DOCS = "$buildDir/openapi.json"
+def FRONTEND_DIR = "${project.rootDir}/frontend"
 
 // https://github.com/OpenAPITools/openapi-generator/tree/master/modules/openapi-generator-gradle-plugin#configuration
 openApiGenerate {
@@ -52,14 +53,6 @@ openApiGenerate {
   ]
 }
 
-//openApi {
-//  def OPEN_API_DOCS_PORT = 8081
-//  apiDocsUrl.set("http://localhost:${OPEN_API_DOCS_PORT}/v3/api-docs")
-//  customBootRun {
-//    args = ["--server.port=${OPEN_API_DOCS_PORT}"]
-//  }
-//}
-
 task generateOpenApiDocs(type: Test, dependsOn: testClasses) {
     useJUnitPlatform()
     inputs.files fileTree("${project.rootDir}/src/main/java")
@@ -68,19 +61,6 @@ task generateOpenApiDocs(type: Test, dependsOn: testClasses) {
         includeTestsMatching "app.OpenApiDocsGenerator"
     }
 }
-
-//task cleanOpenApiGenerate(type: Delete) {
-//  delete fileTree(OPEN_API_GENERATE_DIR).include('**/*')
-//}
-
-task cleanGenerateOpenApiDocs(type: Delete) {
-  delete OPEN_API_DOCS
-}
-
-
-// ./gradlew openApiGenerate
-
-def FRONTEND_DIR = "${project.rootDir}/frontend"
 
 node {
   download = true
