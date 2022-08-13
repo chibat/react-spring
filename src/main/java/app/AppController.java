@@ -17,6 +17,11 @@ public class AppController {
     var response = new Response(result);
     return ResponseEntity.ok(response);
   }
+
+  // @GetMapping("/greet")
+  // public ResponseEntity<String> greet(@RequestParam String name) {
+  //   return ResponseEntity.ok("Hello " + name);
+  // }
 }
 
 // $ curl -X POST -H "Content-Type: application/json" http://localhost:8080/add -d '{"arg1": 1, "arg2": 2}'

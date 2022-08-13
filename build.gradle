@@ -53,6 +53,12 @@ openApiGenerate {
   ]
 }
 
+node {
+  download = true
+  version = "16.14.2"
+  nodeProjectDir = file(FRONTEND_DIR)
+}
+
 task generateOpenApiDocs(type: Test, dependsOn: testClasses) {
     useJUnitPlatform()
     inputs.files fileTree("${project.rootDir}/src/main/java")
@@ -60,12 +66,6 @@ task generateOpenApiDocs(type: Test, dependsOn: testClasses) {
     filter {
         includeTestsMatching "app.OpenApiDocsGenerator"
     }
-}
-
-node {
-  download = true
-  version = "16.14.2"
-  nodeProjectDir = file(FRONTEND_DIR)
 }
 
 task compileFrontend(type: NpmTask) {

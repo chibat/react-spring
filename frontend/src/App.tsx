@@ -9,13 +9,14 @@ export default function App() {
   const [arg2, setArg2] = useState<string>("");
   const [result, setResult] = useState<number>();
 
-  function add() {
+  async function add() {
+    // const greeting = await api.greet("springdoc-openapi");
+    // console.log(greeting);
     if (!arg1 || !arg2) {
       return;
     }
-    api.add({ arg1: Number(arg1), arg2: Number(arg2) }).then(response => {
-      setResult(response.result);
-    });
+    const response = await api.add({ arg1: Number(arg1), arg2: Number(arg2) });
+    setResult(response.result);
   };
 
   return (
