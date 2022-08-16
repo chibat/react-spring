@@ -25,3 +25,7 @@ Open http://localhost:3000/ in your Web Browser
 $ ./gradlew bootJar
 $ java -jar build/libs/react-spring-0.0.1-SNAPSHOT.jar
 ```
+
+## Japanese Article
+
+https://zenn.dev/chiba/articles/typescript-spring
